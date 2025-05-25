@@ -17,6 +17,21 @@ public class FieldPrefab
         this.Column = column;
     }
 
+    public bool TryGetTextByName(string name, out TextMeshProUGUI text)
+    {
+        text = null;
+        TextMeshProUGUI[] texts = instance.GetComponentsInChildren<TextMeshProUGUI>();
+        foreach(var curText in texts)
+        {
+            if (curText.name.Equals(name))
+            {
+                text = curText;
+                return true;
+            }
+        }
+        return false;
+    }
+
     public int Row { get => row; set => row = value; }
     public int Column { get => column; set => column = value; }
 
@@ -31,8 +46,30 @@ public class FieldPrefab
 
     }
 
+    public void SetSmallNumber(int number)
+    {
+        if (TryGetTextByName($"Number{number}", out TextMeshProUGUI text))
+        {
+            text.text = number.ToString();
+            if(TryGetTextByName("Value", out TextMeshProUGUI textValue))
+            {
+                textValue.text = "";
+            }
+        }
+    }
+
     public void SetNumber(int number)
     {
-        instance.GetComponentInChildren<TextMeshProUGUI>().text = number.ToString();
+        if (TryGetTextByName("Value", out TextMeshProUGUI text))
+        {
+            text.text = number.ToString();
+            for (int i = 1; i < 10; i++)
+            {
+                if(TryGetTextByName($"Number{i}", out TextMeshProUGUI textNumber))
+                {
+                    textNumber.text = "";
+                }
+            }
+        }
     }
 }

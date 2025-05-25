@@ -17,14 +17,33 @@ public class GameLogic : MonoBehaviour
 
     public GameObject controlPrefab;
 
+    public Button informationButton;
+
     void Start()
     {
         CreateFieldPrefab();
         CreateControlPrefab();
     }
 
+    private bool IsInformationActive = false;
+
+    public void ClickOnInformationButton()
+    {
+        Debug.Log($"Click on info");
+        if(IsInformationActive)
+        {
+            IsInformationActive = false;
+            informationButton.GetComponent<Image>().color = new Color(1f, 1f, 1f);
+
+        }
+        else
+        {
+            IsInformationActive=true;
+            informationButton.GetComponent<Image>().color = new Color(0.7f, 0.99f, 0.99f);
+        }
+    }
+
     private Dictionary<Tuple<int, int>, FieldPrefab> fieldPrefabDic = new();
-    private Dictionary<Tuple<int, int>, ControlPrefab> controlPrefabDic = new();
     private void CreateFieldPrefab()
     {
         for (int i = 0; i < 9; i++)
@@ -70,7 +89,14 @@ public class GameLogic : MonoBehaviour
         Debug.Log($"Click on ControlPrefab: {prefab.Number}");
         if (currentHoverFieldPrefab != null)
         {
-            currentHoverFieldPrefab.SetNumber(prefab.Number);
+            if (IsInformationActive)
+            {
+                currentHoverFieldPrefab.SetSmallNumber(prefab.Number);
+            }
+            else
+            {
+                currentHoverFieldPrefab.SetNumber(prefab.Number);
+            }
         }
     }
 }
