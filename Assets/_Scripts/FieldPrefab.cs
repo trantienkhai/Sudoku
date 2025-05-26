@@ -17,6 +17,8 @@ public class FieldPrefab
         this.Column = column;
     }
 
+    public bool IsChangeAble = true;
+
     public bool TryGetTextByName(string name, out TextMeshProUGUI text)
     {
         text = null;

@@ -23,6 +23,26 @@ public class GameLogic : MonoBehaviour
     {
         CreateFieldPrefab();
         CreateControlPrefab();
+        CreateSudokuObject();
+    }
+
+    private SudokuObject curSudokuObject;
+    private void CreateSudokuObject()
+    {
+        curSudokuObject = SudokuGenerator.createSudokuObject();
+        for(int i = 0; i < 9; i++)
+        {
+            for (int j = 0; j < 9; j++)
+            {
+                var curValue = curSudokuObject.values[i,j];
+                if(curValue != 0)
+                {
+                    FieldPrefab fieldObject = fieldPrefabDic[new Tuple<int, int>(i, j)];
+                    fieldObject.SetNumber(curValue);
+                    fieldObject.IsChangeAble = false;
+                }
+            }
+        }
     }
 
     private bool IsInformationActive = false;
@@ -62,12 +82,16 @@ public class GameLogic : MonoBehaviour
     private void OnClickFieldPrefab(FieldPrefab fieldPrefab)
     {
         Debug.Log($"Clicked on Row {fieldPrefab.Row}, Column {fieldPrefab.Column} ");
-        if(currentHoverFieldPrefab != null)
+        if (fieldPrefab.IsChangeAble)
         {
-            currentHoverFieldPrefab.UnSetHoverMode();
+            if (currentHoverFieldPrefab != null)
+            {
+                currentHoverFieldPrefab.UnSetHoverMode();
+            }
+            currentHoverFieldPrefab = fieldPrefab;
+            fieldPrefab.SetHoverMode();
         }
-        currentHoverFieldPrefab = fieldPrefab;
-        fieldPrefab.SetHoverMode();
+        
     }
 
     private void CreateControlPrefab()
@@ -95,7 +119,15 @@ public class GameLogic : MonoBehaviour
             }
             else
             {
-                currentHoverFieldPrefab.SetNumber(prefab.Number);
+                int curNumber = prefab.Number;
+                int row = currentHoverFieldPrefab.Row;
+                int column = currentHoverFieldPrefab.Column;
+
+                if (curSudokuObject.IspossibleNumberInPos(curNumber, row, column))
+                {
+                    currentHoverFieldPrefab.SetNumber(prefab.Number);
+
+                }
             }
         }
     }
