@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using System;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameLogic : MonoBehaviour
 {
@@ -20,6 +21,13 @@ public class GameLogic : MonoBehaviour
     public Button informationButton;
 
     private SudokuObject curSudokuObject;
+
+    public Button Back;
+
+    public void OnClickBack()
+    {
+        SceneManager.LoadScene("Level");
+    }
 
     void Start()
     {
@@ -122,15 +130,17 @@ public class GameLogic : MonoBehaviour
             }
             else
             {
-                int curNumber = prefab.Number;
-                int row = currentHoverFieldPrefab.Row;
-                int column = currentHoverFieldPrefab.Column;
+                //int curNumber = prefab.Number;
+                //int row = currentHoverFieldPrefab.Row;
+                //int column = currentHoverFieldPrefab.Column;
 
-                if (curSudokuObject.IspossibleNumberInPos(curNumber, row, column))
-                {
-                    currentHoverFieldPrefab.SetNumber(prefab.Number);
+                //if (curSudokuObject.IspossibleNumberInPos(curNumber, row, column))
+                //{
+                //    currentHoverFieldPrefab.SetNumber(prefab.Number);
 
-                }
+                //}
+                currentHoverFieldPrefab.SetNumber(prefab.Number);
+
             }
         }
     }
