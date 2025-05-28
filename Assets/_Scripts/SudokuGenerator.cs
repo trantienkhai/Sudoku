@@ -1,16 +1,200 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.UIElements;
 using UnityEngine;
 
-public class SudokuGenerator : MonoBehaviour
+public class SudokuGenerator 
 {
    public static SudokuObject createSudokuObject()
     {
-        SudokuObject sudokuObject = new SudokuObject();
-        CreateRandomGruops(sudokuObject);
-        return sudokuObject;
+        //finalSudokuObject = null;
+        //SudokuObject sudokuObject = new SudokuObject();
+        //CreateRandomGruops(sudokuObject);
+        //if (TryToSolve(sudokuObject))
+        //{
+        //    sudokuObject = finalSudokuObject;
+        //}
+        //else
+        //{
+        //    throw new System.Exception("Somthing went wrong");
+        //}
+        //return sudokuObject;
+        SudokuObject sudokuObject = null;
+        bool success = false;
+        while (!success)
+        {
+            sudokuObject = new SudokuObject();
+            CreateRandomGruops(sudokuObject);
+
+            if (TryToSolve(sudokuObject))
+            {
+                sudokuObject = finalSudokuObject;
+                success = true;
+            }
+        }
+
+        ////return sudokuObject;
+        return RemoveNumbers(sudokuObject);
     }
 
+    private static SudokuObject RemoveNumbers(SudokuObject sudokuObject)
+    {
+        SudokuObject newSudokuObject = new SudokuObject();
+        newSudokuObject.values = (int[,])sudokuObject.values.Clone();
+        List<int> values = GetValue();
+        bool isFinish = false;
+        while (!isFinish)
+        {
+            if (values.Count == 0) break;
+            int index = Random.Range(0, values.Count);
+            int searchIndex = values[index];
+            for(int i = 1; i < 10; i++)
+            {
+                for(int j = 1; j < 10; j++)
+                {
+                    if(i*j == searchIndex)
+                    {
+                        values.RemoveAt(index);
+                        SudokuObject nextSudokuObject = new SudokuObject();
+                        nextSudokuObject.values = (int[,])newSudokuObject.values.Clone();
+                        nextSudokuObject.values[i - 1, j - 1] = 0;
+                        if (TryToSolve(nextSudokuObject, true))
+                        {
+                            newSudokuObject = nextSudokuObject;
+                        }
+                    }
+                }
+            }
+            if(values.Count < 30)
+            {
+                isFinish = true;
+            }
+        }
+        return newSudokuObject;
+    }
+
+    private static List<int> GetValue()
+    {
+        List<int> values = new List<int>();
+        for (int i = 1; i < 10; i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+                values.Add(i * j);
+            }
+        }
+        return values;
+    }
+
+    private static SudokuObject finalSudokuObject;
+
+    private static bool TryToSolve(SudokuObject sudokuObject, bool onlyOne = false)
+    {
+        if (HasEmptyFieldsToFill(sudokuObject, out int row, out int column, onlyOne)) 
+        {
+            List<int> possibleValues = GetPossibleValues(sudokuObject,row, column);
+            foreach(var possibleValue in possibleValues)
+            {
+                SudokuObject nextSudokuObject = new SudokuObject();
+                nextSudokuObject.values = (int[,])sudokuObject.values.Clone();
+                nextSudokuObject.values[row,column] = possibleValue;
+                if(TryToSolve(nextSudokuObject, onlyOne))
+                {
+                    return true;
+                }
+            }
+        }
+
+        if(HasEmptyFields(sudokuObject))
+        {
+            return false;
+        }
+        finalSudokuObject = sudokuObject;
+        return true;
+    }
+
+    private static bool HasEmptyFields(SudokuObject sudokuObject)
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            for (int j = 0; j < 9; j++)
+            {
+                if (sudokuObject.values[i, j] == 0)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private static List<int> GetPossibleValues(SudokuObject sudokuObject, int row, int column)
+    {
+        List<int> possibleValues = new List<int>();
+        for(int value = 1; value < 10; value++)
+        {
+            if(sudokuObject.IspossibleNumberInPos(value,row, column))
+            {
+                possibleValues.Add(value);
+            }
+        }
+        return possibleValues;
+    }
+
+    private static bool HasEmptyFieldsToFill(SudokuObject sudokuObject,out int row , out int column, bool onlyOne = false)
+    {
+        row = 0; column = 0;
+        int amountOfPossibaleValues = 10;
+        for(int i = 0; i< 9; i++)
+        {
+            for(int j = 0; j< 9; j++)
+            {
+                if (sudokuObject.values[i,j] == 0)
+                {
+                    int curAmount = GetPossibleAmountOfValues(sudokuObject, i, j);
+                    if(curAmount !=0)
+                    {
+                        if(curAmount < amountOfPossibaleValues)
+                        {
+                            amountOfPossibaleValues = curAmount;
+                            row = i;
+                            column = j;
+                        }
+                    }    
+                  
+
+                }
+            }
+        }
+        if (onlyOne)
+        {
+            if(amountOfPossibaleValues == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        if(amountOfPossibaleValues == 10)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    private static int GetPossibleAmountOfValues(SudokuObject sudokuObject, int row, int column)
+    {
+        int amount = 0;
+        for (int k = 1; k < 10; k++)
+        {
+            if (sudokuObject.IspossibleNumberInPos(k, row, column))
+            {
+                amount++;
+            }
+        }
+        return amount;
+    }
     public static void CreateRandomGruops(SudokuObject sudokuObject)
     {
         List<int> values = new List<int>() { 0, 1, 2 };

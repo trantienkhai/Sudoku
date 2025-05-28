@@ -19,6 +19,8 @@ public class GameLogic : MonoBehaviour
 
     public Button informationButton;
 
+    private SudokuObject curSudokuObject;
+
     void Start()
     {
         CreateFieldPrefab();
@@ -26,7 +28,6 @@ public class GameLogic : MonoBehaviour
         CreateSudokuObject();
     }
 
-    private SudokuObject curSudokuObject;
     private void CreateSudokuObject()
     {
         curSudokuObject = SudokuGenerator.createSudokuObject();
@@ -81,14 +82,17 @@ public class GameLogic : MonoBehaviour
     private FieldPrefab currentHoverFieldPrefab;
     private void OnClickFieldPrefab(FieldPrefab fieldPrefab)
     {
-        Debug.Log($"Clicked on Row {fieldPrefab.Row}, Column {fieldPrefab.Column} ");
         if (fieldPrefab.IsChangeAble)
         {
+            Debug.Log($"Clicked on Row {fieldPrefab.Row}, Column {fieldPrefab.Column} ");
             if (currentHoverFieldPrefab != null)
             {
-                currentHoverFieldPrefab.UnSetHoverMode();
+                //currentHoverFieldPrefab.UnSetHoverMode();
+                //UnHighLightRelatedFields(currentHoverFieldPrefab);
+                ResetAllHighlight();
             }
             currentHoverFieldPrefab = fieldPrefab;
+            HighLightRelatedFields(currentHoverFieldPrefab);
             fieldPrefab.SetHoverMode();
         }
         
@@ -101,7 +105,6 @@ public class GameLogic : MonoBehaviour
             GameObject instance = Instantiate(controlPrefab, controlPanel.transform);
             instance.GetComponentInChildren<TextMeshProUGUI>().text = i.ToString();
             ControlPrefab prefab = new();
-            //controlPrefabDic.Add()
             prefab.Number = i;
             instance.GetComponent<Button>().onClick.AddListener(() => OnClickControlPrefab(prefab));
 
@@ -131,4 +134,58 @@ public class GameLogic : MonoBehaviour
             }
         }
     }
+
+    // Ham hightlight cac hang va cot, group lien quan
+    private void HighLightRelatedFields(FieldPrefab fieldPrefab)
+    {
+        Debug.Log("Duoc goi highlight");
+        // Hightlight hang va cot
+        for(int i = 0; i < 9; i++)
+        {
+            fieldPrefabDic[new Tuple<int, int>(fieldPrefab.Row, i)].SetHighLight();
+            fieldPrefabDic[new Tuple<int, int>(i, fieldPrefab.Column)].SetHighLight();
+        }
+        // Hightlight group
+        int group = curSudokuObject.GetGroup(fieldPrefab.Row, fieldPrefab.Column);
+        curSudokuObject.GetGruopIndex(group, out int startRow, out int startColumn);
+        for(int i = startRow; i < startRow + 3; i++)
+        {
+            for(int j = startColumn; j < startColumn + 3; j++)
+            {
+                fieldPrefabDic[new Tuple<int, int>(i,j)].SetHighLight();
+            }
+        }
+
+    }
+
+    private void UnHighLightRelatedFields(FieldPrefab fieldPrefab)
+    {
+        Debug.Log("Duoc goi unhighlight");
+
+        // UnHightlight hang va cot
+        for (int i = 0; i < 9; i++)
+        {
+            fieldPrefabDic[new Tuple<int, int>(fieldPrefab.Row, i)].UnSetHighLight();
+            fieldPrefabDic[new Tuple<int, int>(i, fieldPrefab.Column)].UnSetHighLight();
+        }
+        // UnHightlight group
+        int group = curSudokuObject.GetGroup(fieldPrefab.Row, fieldPrefab.Column);
+        curSudokuObject.GetGruopIndex(group, out int startRow, out int startColumn);
+        for (int i = startRow; i < startRow + 3; i++)
+        {
+            for (int j = startColumn; j < startColumn + 3; j++)
+            {
+                fieldPrefabDic[new Tuple<int, int>(i, j)].UnSetHighLight();
+            }
+        }
+    }
+
+    private void ResetAllHighlight()
+    {
+        foreach (var field in fieldPrefabDic.Values)
+        {
+            field.UnSetHighLight();
+        }
+    }
+
 }

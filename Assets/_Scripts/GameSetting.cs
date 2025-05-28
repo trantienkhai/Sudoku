@@ -2,8 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ControlPrefab
+public class GameSetting 
 {
-     public int Number;
-
+    public static int EasyMiddleHardManager = 0;
 }

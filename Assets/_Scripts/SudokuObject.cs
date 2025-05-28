@@ -53,7 +53,7 @@ public class SudokuObject
         return false;
     }
 
-    private int GetGroup(int row, int column)
+    public int GetGroup(int row, int column)
     {
         if(row < 3)
         {

@@ -31,6 +31,7 @@ public class FieldPrefab
                 return true;
             }
         }
+        
         return false;
     }
 
@@ -73,5 +74,15 @@ public class FieldPrefab
                 }
             }
         }
+    }
+
+    public void SetHighLight()
+    {
+        instance.GetComponent <Image>().color = new Color(0.79f, 0.85f, 0.61f);
+    }
+
+    public void UnSetHighLight()
+    {
+        instance.GetComponent<Image>().color = new Color(1f, 1f, 1f);
     }
 }
