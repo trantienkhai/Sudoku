@@ -9,20 +9,9 @@ using Random = UnityEngine.Random;
 
 public class SudokuGenerator
 {
-    public static SudokuObject createSudokuObject()
+    public static void createSudokuObject(out SudokuObject finalObject, out SudokuObject gameObject )
     {
-        //finalSudokuObject = null;
-        //SudokuObject sudokuObject = new SudokuObject();
-        //CreateRandomGruops(sudokuObject);
-        //if (TryToSolve(sudokuObject))
-        //{
-        //    sudokuObject = finalSudokuObject;
-        //}
-        //else
-        //{
-        //    throw new System.Exception("Somthing went wrong");
-        //}
-        //return sudokuObject;
+        finalObject = null;
         SudokuObject sudokuObject = null;
         bool success = false;
         while (!success)
@@ -33,12 +22,11 @@ public class SudokuGenerator
             if (TryToSolve(sudokuObject))
             {
                 sudokuObject = finalSudokuObject;
+                finalObject = sudokuObject;
                 success = true;
             }
         }
-
-        ////return sudokuObject;
-        return RemoveNumbers(sudokuObject);
+        gameObject = RemoveNumbers(sudokuObject);
     }
 
     //private static SudokuObject RemoveNumbers(SudokuObject sudokuObject)
@@ -113,7 +101,7 @@ public class SudokuGenerator
             {
                 isFinish = true;
             }
-            values.RemoveAt(index);
+            //values.RemoveAt(index);
 
         }
         return newSudokuObject;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -9,6 +10,10 @@ public class FieldPrefab
     private int row;
     private int column;
     private GameObject instance;
+    public bool IsChangeAble = true;
+    public int number;
+
+    public bool[] numberInControlPrefab = new bool[10];
 
     public FieldPrefab(GameObject instance, int row, int column)
     {
@@ -16,8 +21,6 @@ public class FieldPrefab
         this.Row = row;
         this.Column = column;
     }
-
-    public bool IsChangeAble = true;
 
     public bool TryGetTextByName(string name, out TextMeshProUGUI text)
     {
@@ -40,7 +43,8 @@ public class FieldPrefab
 
     public void SetHoverMode()
     {
-        instance.GetComponent<Image>().color = new Color(0.7f, 0.99f, 0.99f);
+        instance.GetComponent<Image>().color = new Color(0.6176f, 0.7056f, 0.4620f);
+
     }
 
     public void UnSetHoverMode()
@@ -61,10 +65,19 @@ public class FieldPrefab
         }
     }
 
+    public void UnSetSmallNumber(int number)
+    {
+        if (TryGetTextByName($"Number{number}", out TextMeshProUGUI text))
+        {
+            text.text = "";
+        }
+    }
+
     public void SetNumber(int number)
     {
         if (TryGetTextByName("Value", out TextMeshProUGUI text))
         {
+            this.number = number;
             text.text = number.ToString();
             for (int i = 1; i < 10; i++)
             {
@@ -83,6 +96,27 @@ public class FieldPrefab
 
     public void UnSetHighLight()
     {
-        instance.GetComponent<Image>().color = new Color(1f, 1f, 1f);
+        instance.GetComponent<Image>().color = new Color(0.8955f, 0.9245f, 0.8155f);
+    }
+
+    public void ChangeColorToGreen()
+    {
+        instance.GetComponent<Image>().color = Color.green;
+
+    }
+
+    public void ChangeColorToRed()
+    {
+        instance.GetComponent<Image>().color = Color.red;
+
+    }
+
+    public void RemoveNumbersRelated(int number)
+    {
+        if (numberInControlPrefab[number])
+        {
+            UnSetSmallNumber(number);
+            numberInControlPrefab[number] = false;
+        }
     }
 }

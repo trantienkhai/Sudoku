@@ -20,9 +20,38 @@ public class GameLogic : MonoBehaviour
 
     public Button informationButton;
 
-    private SudokuObject curSudokuObject;
+    private SudokuObject _gameObject;
+
+    private SudokuObject _finalObject;
 
     public Button Back;
+
+    public Button finish;
+
+    private bool IsInformationActive = false;
+
+
+    public void ClickOnFinsih()
+    {
+        for (int i = 0; i < 9; i++) 
+        {
+            for(int j = 0; j < 9; j++)
+            {
+                FieldPrefab fieldObject = fieldPrefabDic[new Tuple<int, int>(i, j)];
+                if (fieldObject.IsChangeAble)
+                {
+                    if (_finalObject.values[i,j] == fieldObject.number)
+                    {
+                        fieldObject.ChangeColorToGreen();
+                    }
+                    else
+                    {
+                        fieldObject.ChangeColorToRed();
+                    }
+                }
+            }
+        }
+    }
 
     public void OnClickBack()
     {
@@ -38,12 +67,14 @@ public class GameLogic : MonoBehaviour
 
     private void CreateSudokuObject()
     {
-        curSudokuObject = SudokuGenerator.createSudokuObject();
+        SudokuGenerator.createSudokuObject(out SudokuObject finalObject, out SudokuObject gameObject);
+        _gameObject = gameObject;
+        _finalObject = finalObject;
         for(int i = 0; i < 9; i++)
         {
             for (int j = 0; j < 9; j++)
             {
-                var curValue = curSudokuObject.values[i,j];
+                var curValue = this._gameObject.values[i, j];
                 if(curValue != 0)
                 {
                     FieldPrefab fieldObject = fieldPrefabDic[new Tuple<int, int>(i, j)];
@@ -54,11 +85,8 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    private bool IsInformationActive = false;
-
     public void ClickOnInformationButton()
     {
-        Debug.Log($"Click on info");
         if(IsInformationActive)
         {
             IsInformationActive = false;
@@ -92,7 +120,6 @@ public class GameLogic : MonoBehaviour
     {
         if (fieldPrefab.IsChangeAble)
         {
-            Debug.Log($"Clicked on Row {fieldPrefab.Row}, Column {fieldPrefab.Column} ");
             if (currentHoverFieldPrefab != null)
             {
                 //currentHoverFieldPrefab.UnSetHoverMode();
@@ -121,43 +148,46 @@ public class GameLogic : MonoBehaviour
 
     private void OnClickControlPrefab(ControlPrefab prefab)
     {
-        Debug.Log($"Click on ControlPrefab: {prefab.Number}");
         if (currentHoverFieldPrefab != null)
         {
             if (IsInformationActive)
             {
-                currentHoverFieldPrefab.SetSmallNumber(prefab.Number);
+                if (!currentHoverFieldPrefab.numberInControlPrefab[prefab.Number]) 
+                {
+                    currentHoverFieldPrefab.numberInControlPrefab[prefab.Number] = true;
+                    currentHoverFieldPrefab.SetSmallNumber(prefab.Number);
+                }
+                else
+                {
+                    currentHoverFieldPrefab.numberInControlPrefab[prefab.Number] = false;
+                    currentHoverFieldPrefab.UnSetSmallNumber(prefab.Number);
+                }
             }
             else
             {
-                //int curNumber = prefab.Number;
-                //int row = currentHoverFieldPrefab.Row;
-                //int column = currentHoverFieldPrefab.Column;
-
-                //if (curSudokuObject.IspossibleNumberInPos(curNumber, row, column))
-                //{
-                //    currentHoverFieldPrefab.SetNumber(prefab.Number);
-
-                //}
                 currentHoverFieldPrefab.SetNumber(prefab.Number);
-
+                if(currentHoverFieldPrefab.number != _finalObject.values[currentHoverFieldPrefab.Row, currentHoverFieldPrefab.Column])
+                {
+                    currentHoverFieldPrefab.ChangeColorToRed();
+                }
+                else
+                {
+                    currentHoverFieldPrefab.ChangeColorToGreen();
+                    RemoveWhenFillCorrect(currentHoverFieldPrefab);
+                }
             }
         }
     }
 
-    // Ham hightlight cac hang va cot, group lien quan
     private void HighLightRelatedFields(FieldPrefab fieldPrefab)
     {
-        Debug.Log("Duoc goi highlight");
-        // Hightlight hang va cot
         for(int i = 0; i < 9; i++)
         {
             fieldPrefabDic[new Tuple<int, int>(fieldPrefab.Row, i)].SetHighLight();
             fieldPrefabDic[new Tuple<int, int>(i, fieldPrefab.Column)].SetHighLight();
         }
-        // Hightlight group
-        int group = curSudokuObject.GetGroup(fieldPrefab.Row, fieldPrefab.Column);
-        curSudokuObject.GetGruopIndex(group, out int startRow, out int startColumn);
+        int group = _gameObject.GetGroup(fieldPrefab.Row, fieldPrefab.Column);
+        _gameObject.GetGruopIndex(group, out int startRow, out int startColumn);
         for(int i = startRow; i < startRow + 3; i++)
         {
             for(int j = startColumn; j < startColumn + 3; j++)
@@ -165,7 +195,24 @@ public class GameLogic : MonoBehaviour
                 fieldPrefabDic[new Tuple<int, int>(i,j)].SetHighLight();
             }
         }
+    }
 
+    private void RemoveWhenFillCorrect(FieldPrefab fieldPrefab)
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            fieldPrefabDic[new Tuple<int, int>(fieldPrefab.Row, i)].RemoveNumbersRelated(fieldPrefab.number);
+            fieldPrefabDic[new Tuple<int, int>(i, fieldPrefab.Column)].RemoveNumbersRelated(fieldPrefab.number);
+        }
+        int group = _gameObject.GetGroup(fieldPrefab.Row, fieldPrefab.Column);
+        _gameObject.GetGruopIndex(group, out int startRow, out int startColumn);
+        for (int i = startRow; i < startRow + 3; i++)
+        {
+            for (int j = startColumn; j < startColumn + 3; j++)
+            {
+                fieldPrefabDic[new Tuple<int, int>(i, j)].RemoveNumbersRelated(fieldPrefab.number);
+            }
+        }
     }
 
     private void UnHighLightRelatedFields(FieldPrefab fieldPrefab)
@@ -179,8 +226,8 @@ public class GameLogic : MonoBehaviour
             fieldPrefabDic[new Tuple<int, int>(i, fieldPrefab.Column)].UnSetHighLight();
         }
         // UnHightlight group
-        int group = curSudokuObject.GetGroup(fieldPrefab.Row, fieldPrefab.Column);
-        curSudokuObject.GetGruopIndex(group, out int startRow, out int startColumn);
+        int group = _gameObject.GetGroup(fieldPrefab.Row, fieldPrefab.Column);
+        _gameObject.GetGruopIndex(group, out int startRow, out int startColumn);
         for (int i = startRow; i < startRow + 3; i++)
         {
             for (int j = startColumn; j < startColumn + 3; j++)
